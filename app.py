@@ -7,7 +7,6 @@ import os
 import io
 import base64
 import tempfile
-from turtle import position
 import numpy as np
 import streamlit as st
 from PIL import Image, ImageOps
