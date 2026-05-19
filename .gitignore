@@ -1,0 +1,13 @@
+.env
+pipeline_cache.db
+__pycache__/
+*.pyc
+test_images/
+useless/
+test_*.py
+face_landmarker.task
+.claude/
+check_db.py
+export_db.py
+db_manager.py
+주저리.md
