@@ -273,15 +273,18 @@ def apply_top4_individually(analysis_result, top4, visualizer, img_bgr):
         rendered = visualizer.apply_lipstick(img_bgr, landmarks, lip_bgr, intensity=0.55)
         src = rendered if rendered is not None else img_bgr
 
-        # 립 마스크 영역 평균 BGR 추출 → 색상 바에 사용
-        mask = visualizer._create_refined_mask(src, landmarks)
-        mask_bool = mask > 30
-        if mask_bool.any():
-            blended_bgr = src[mask_bool].mean(axis=0).astype(int).tolist()
+        # src가 numpy array인지 확인
+        if isinstance(src, np.ndarray):
+            mask = visualizer._create_refined_mask(src, landmarks)
+            mask_bool = mask > 30
+            if mask_bool.any():
+                blended_bgr = src[mask_bool].mean(axis=0).astype(int).tolist()
+            else:
+                blended_bgr = lip_bgr
         else:
             blended_bgr = lip_bgr
-        blended_hexes.append(bgr_to_hex(blended_bgr))
 
+        blended_hexes.append(bgr_to_hex(blended_bgr))
         results.append(Image.fromarray(_cv2.cvtColor(src, _cv2.COLOR_BGR2RGB)))
 
     return results, blended_hexes
