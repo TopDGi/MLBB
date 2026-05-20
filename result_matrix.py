@@ -144,7 +144,9 @@ def _draw_cell(
 
     # 립스틱 적용 이미지 (image_path str을 그대로 전달)
     try:
-        lip_img = visualizer.apply_lipstick(image_path, landmarks, bgr, intensity=0.55)
+        texture_map = {"MATTE": "matte", "GLOSSY": "glossy", "TINT": "tint", "SATIN": "matte", "BALM": "glossy"}
+        texture_str = texture_map.get(item.get("texture", ""), "matte")
+        lip_img, _ = visualizer.apply_lipstick(image_path, landmarks, bgr, intensity=0.65, texture=texture_str)
         if lip_img is None:
             raise ValueError
     except Exception:

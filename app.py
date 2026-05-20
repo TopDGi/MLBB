@@ -271,7 +271,9 @@ def apply_top4_individually(analysis_result, top4, visualizer, img_bgr):
     for item in top4:
         lip_bgr = item["bgr"]
         try:
-            rendered = visualizer.apply_lipstick(img_bgr, landmarks, lip_bgr, intensity=0.55)
+            texture_map = {"MATTE": "matte", "GLOSSY": "glossy", "TINT": "tint", "SATIN": "matte", "BALM": "glossy"}
+            texture_str = texture_map.get(item.get("texture", ""), "matte")
+            rendered, _ = visualizer.apply_lipstick(img_bgr, landmarks, lip_bgr, intensity=0.65, texture=texture_str)
         except Exception:
             rendered = None
 
