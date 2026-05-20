@@ -5,7 +5,6 @@ __pycache__/
 test_images/
 useless/
 test_*.py
-face_landmarker.task
 .claude/
 check_db.py
 export_db.py

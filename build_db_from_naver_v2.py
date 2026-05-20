@@ -48,7 +48,9 @@ from lipDB_pipeline.db_store_v2 import (
 )
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Referer": "https://shopping.naver.com/",   # ← 추가: 이게 없으면 CDN이 이미지 차단
+    "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
 }
 
 
@@ -71,21 +73,38 @@ def step2_color(conn) -> None:
     if not pending:
         print("\n[STEP 2] BGR 추출: 건너뜀 (모두 완료됨)")
         return
-
+ 
     print(f"\n[STEP 2] BGR 색상 추출 ({len(pending)}개)...")
+    fail_count = 0
+ 
     for i, (name, img_url) in enumerate(pending, 1):
         try:
-            resp = requests.get(img_url, headers=HEADERS, timeout=10)
-            resp.raise_for_status()
-            bgr = extract_center_bgr(resp.content)
+            # ── 수정: 재시도 로직 추가 (최대 2회) ──────────────────────────
+            bgr = None
+            for attempt in range(2):
+                try:
+                    resp = requests.get(img_url, headers=HEADERS, timeout=15)
+                    resp.raise_for_status()
+                    bgr = extract_center_bgr(resp.content)
+                    if bgr:
+                        break
+                except Exception:
+                    time.sleep(1.0)
+                    continue
+ 
             if bgr:
                 update_color(conn, name, bgr)
                 print(f"  [OK] [{i:>3}/{len(pending)}] BGR {bgr}  {name[:35]}")
             else:
+                fail_count += 1
                 print(f"  [FAIL] [{i:>3}/{len(pending)}] 이미지 디코드 실패  {name[:35]}")
         except Exception as e:
+            fail_count += 1
             print(f"  [ERROR] [{i:>3}/{len(pending)}] {e}  {name[:35]}")
         time.sleep(0.3)
+ 
+    success = len(pending) - fail_count
+    print(f"  [DONE] {success}/{len(pending)}개 BGR 추출 완료 (실패: {fail_count}개)")
 
 
 def step3_tag(conn) -> None:
