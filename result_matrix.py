@@ -144,12 +144,13 @@ def _draw_cell(
 
     # 립스틱 적용 이미지 (image_path str을 그대로 전달)
     try:
-        texture_map = {"MATTE": "matte", "GLOSSY": "glossy", "TINT": "tint", "SATIN": "matte", "BALM": "glossy"}
+        texture_map = {"MATTE": "matte", "GLOSSY": "glossy", "TINT": "tint", "SATIN": "matte", "BALM": "glossy", "LIPSTICK": "tint"}
         texture_str = texture_map.get(item.get("texture", ""), "matte")
-        lip_img, _ = visualizer.apply_lipstick(image_path, landmarks, bgr, intensity=0.65, texture=texture_str)
+        lip_img, _ = visualizer.apply_lipstick(image_path, landmarks, bgr, intensity=0.55, texture=texture_str)
         if lip_img is None:
             raise ValueError
-    except Exception:
+    except Exception as e:
+        print(f"    ⚠️  {rank}위 렌더링 실패: {e}, 원본 이미지 사용")
         lip_img = cv2.imread(image_path)
 
     # 사진 삽입

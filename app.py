@@ -270,25 +270,10 @@ def apply_top4_individually(analysis_result, top4, visualizer, img_bgr):
 
     for item in top4:
         lip_bgr = item["bgr"]
-        try:
-            texture_map = {"MATTE": "matte", "GLOSSY": "glossy", "TINT": "tint", "SATIN": "matte", "BALM": "glossy"}
-            texture_str = texture_map.get(item.get("texture", ""), "matte")
-            rendered, _ = visualizer.apply_lipstick(img_bgr, landmarks, lip_bgr, intensity=0.65, texture=texture_str)
-        except Exception:
-            rendered = None
-
-        src = rendered if (rendered is not None and isinstance(rendered, np.ndarray)) else img_bgr.copy()
-
-        # 블렌딩된 립 색 추출
-        try:
-            mask = visualizer._create_refined_mask(src, landmarks)
-            mask_bool = mask > 30
-            if mask_bool.any():
-                blended_bgr = src[mask_bool].mean(axis=0).astype(int).tolist()
-            else:
-                blended_bgr = lip_bgr
-        except Exception:
-            blended_bgr = lip_bgr
+        texture_map = {"MATTE": "matte", "GLOSSY": "glossy", "TINT": "tint", "SATIN": "matte", "BALM": "glossy", "LIPSTICK": "tint"}
+        texture_str = texture_map.get(item.get("texture", ""), "matte")
+        rendered, blended_bgr = visualizer.apply_lipstick(img_bgr, landmarks, lip_bgr, intensity=0.55, texture=texture_str)
+        src = rendered
 
         blended_hexes.append(bgr_to_hex(blended_bgr))
 
