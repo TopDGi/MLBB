@@ -270,22 +270,31 @@ def apply_top4_individually(analysis_result, top4, visualizer, img_bgr):
 
     for item in top4:
         lip_bgr = item["bgr"]
-        rendered = visualizer.apply_lipstick(img_bgr, landmarks, lip_bgr, intensity=0.55)
-        src = rendered if rendered is not None else img_bgr
+        try:
+            rendered = visualizer.apply_lipstick(img_bgr, landmarks, lip_bgr, intensity=0.55)
+        except Exception:
+            rendered = None
 
-        # src가 numpy array인지 확인
-        if isinstance(src, np.ndarray):
+        src = rendered if (rendered is not None and isinstance(rendered, np.ndarray)) else img_bgr.copy()
+
+        # 블렌딩된 립 색 추출
+        try:
             mask = visualizer._create_refined_mask(src, landmarks)
             mask_bool = mask > 30
             if mask_bool.any():
                 blended_bgr = src[mask_bool].mean(axis=0).astype(int).tolist()
             else:
                 blended_bgr = lip_bgr
-        else:
+        except Exception:
             blended_bgr = lip_bgr
 
         blended_hexes.append(bgr_to_hex(blended_bgr))
-        results.append(Image.fromarray(_cv2.cvtColor(src, _cv2.COLOR_BGR2RGB)))
+
+        try:
+            pil = Image.fromarray(_cv2.cvtColor(src, _cv2.COLOR_BGR2RGB))
+        except Exception:
+            pil = Image.fromarray(_cv2.cvtColor(img_bgr.copy(), _cv2.COLOR_BGR2RGB))
+        results.append(pil)
 
     return results, blended_hexes
 
